@@ -1,0 +1,59 @@
+name: Spark + Kafka
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  spark-parity:
+    name: Spark job matches the reference engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-stream.txt pytest
+      - run: pytest -q -m spark tests/spark
+      - name: Full stream through Spark (file source)
+        run: make spark-demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spark-report
+          path: data/spark_report/*.png
+
+  compose:
+    name: Kafka → Spark with docker compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build
+      - run: docker compose up -d kafka
+      - run: docker compose run --rm create-topic
+      - name: Replay the stream into Kafka
+        run: docker compose run --rm producer produce --speedup 900
+      - name: Drain the topic with Spark (Trigger.AvailableNow)
+        run: >
+          docker compose run --rm spark spark --source kafka --trigger available_now
+          --lake /app/data/spark_lake --checkpoint /app/data/spark_checkpoints
+      - name: Check the Parquet output
+        run: |
+          docker compose run --rm --entrypoint python spark -c "
+          from clickstream.sinks import read_table
+          for t in ('events', 'dead_letter', 'metrics_minute', 'sessions'):
+              n = len(read_table('/app/data/spark_lake', t))
+              print(t, n)
+              assert n > 0, t
+          "
+      - if: always()
+        run: docker compose logs --tail 200 kafka
+      - if: always()
+        run: docker compose down -v

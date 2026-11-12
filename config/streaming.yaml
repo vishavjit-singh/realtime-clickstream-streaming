@@ -1,0 +1,28 @@
+# Streaming semantics shared by the local reference engine and the Spark job.
+topic: clickstream
+partitions: 3
+
+watermark_minutes: 10        # how long we wait for late events
+window_minutes: 1            # tumbling window for traffic metrics
+session_gap_minutes: 30      # inactivity gap that closes a session
+max_future_skew_minutes: 5   # event_time may not be ahead of sent_at by more than this
+max_records_per_trigger: 600 # like Kafka maxOffsetsPerTrigger
+
+paths:
+  source: data/source        # local partitioned log (Kafka stand-in)
+  lake: data/lake            # bronze events, dead letters, minute metrics, sessions
+  checkpoint: data/checkpoints
+  images: docs/images
+
+generator:
+  seed: 7
+  users: 1500
+  minutes: 180
+  start: "2026-01-05T09:00:00+00:00"
+  campaign_start_minute: 95    # a marketing push that spikes traffic
+  campaign_minutes: 25
+  late_within_watermark: 0.07  # mobile clients buffering events for 30 s – 8 min
+  late_beyond_watermark: 0.01  # events delayed 12 – 40 min (beyond the watermark)
+  duplicate_rate: 0.015        # at-least-once producer retries
+  malformed_rate: 0.008        # broken JSON, missing fields, bad values
+  clock_skew_rate: 0.002       # devices with clocks hours in the future

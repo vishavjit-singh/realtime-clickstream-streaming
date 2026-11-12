@@ -1,0 +1,4 @@
+# Extra dependencies for the Kafka + Spark stack (docker compose and the spark workflow)
+-r requirements.txt
+pyspark==3.5.3
+confluent-kafka>=2.4

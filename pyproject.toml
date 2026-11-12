@@ -1,0 +1,20 @@
+[project]
+name = "realtime-clickstream-streaming"
+version = "1.0.0"
+description = "Kafka → Spark Structured Streaming clickstream pipeline with event-time watermarks, sessionization and exactly-once Parquet sinks."
+authors = [{ name = "Vishavjit Singh Saini" }]
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+markers = ["spark: needs pyspark and a JVM (runs in the spark workflow)"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
