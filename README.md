@@ -175,7 +175,7 @@ All commands run as `PYTHONPATH=src python -m clickstream <command>`.
 ## Author
 
 **Vishavjit Singh Saini**, Data Engineer
-[Portfolio](https://vishavjit-saini.pages.dev/) · [LinkedIn](https://www.linkedin.com/in/vishavjit-singh-7011211ab/) · [GitHub](https://github.com/vishavjit-singh)
+[Portfolio](https://vishavjit-singh.github.io/portfolio/) · [LinkedIn](https://www.linkedin.com/in/vishavjit-singh-7011211ab/) · [GitHub](https://github.com/vishavjit-singh)
 
 ## License
 
